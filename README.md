@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ShipHero Onsite Compass
 
-## Getting Started
+Guided web app for capturing customer onsite visits, training observations, workflow issues, follow-up actions, and reusable trend signals.
 
-First, run the development server:
+## What It Captures
+
+- Account context: account name, account ID, ARR, location, visit date, onsite lead, stakeholders, and visit objective.
+- Operation snapshot: facility profile, order volume, SKU count, shifts, integrations, pain points, and training gaps.
+- Workflow walkthrough: receiving, putaway, inventory, replenishment, picking, packing, shipping, returns, and integrations.
+- Notes and transcription: typed notes, browser dictation where supported, and recorded audio for OpenAI transcription when configured.
+- Closeout: blockers, recommendations, customer sentiment, follow-up owner, follow-up due date, AI-ready summary, and trend tags.
+- Catalog: locally saved visit records and JSON export for downstream analysis.
+
+## Local Setup
 
 ```bash
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## OpenAI Configuration
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create `.env.local` from `.env.example` and set:
 
-## Learn More
+```bash
+OPENAI_API_KEY=...
+OPENAI_SUMMARY_MODEL=...
+OPENAI_TRANSCRIPTION_MODEL=...
+```
 
-To learn more about Next.js, take a look at the following resources:
+Without those values, the app still works with browser dictation, local summary drafting, local catalog saves, and JSON export.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## GitHub and Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Push this project to a private GitHub repo.
+2. Import the repo in Vercel as a Next.js project.
+3. Add the OpenAI environment variables in Vercel Project Settings.
+4. Let Vercel create preview deployments for pull requests and production deployments from `main`.
 
-## Deploy on Vercel
+The included GitHub Action runs install, lint, and build on pushes and pull requests.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Recommended Next Iterations
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Add authentication for ShipHero users.
+- Store visits in a shared database instead of browser storage.
+- Add customer/account lookup from CRM or internal account systems.
+- Add dashboards for trend analysis by workflow, root cause, ARR risk, and customer segment.
+- Package the same flow as a private iOS app once the workflow stabilizes.
