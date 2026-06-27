@@ -1,15 +1,49 @@
 # ShipHero Onsite Compass
 
-Guided web app for capturing customer onsite visits, training observations, workflow issues, follow-up actions, and reusable trend signals.
+Conversational web app for capturing customer onsite visits without forcing the user through a long form.
 
-## What It Captures
+## TLDR
 
-- Account context: account name, account ID, ARR, location, visit date, onsite lead, stakeholders, and visit objective.
-- Operation snapshot: facility profile, order volume, SKU count, shifts, integrations, pain points, and training gaps.
-- Workflow walkthrough: receiving, putaway, inventory, replenishment, picking, packing, shipping, returns, and integrations.
-- Notes and transcription: typed notes, browser dictation where supported, and recorded audio for OpenAI transcription when configured.
-- Closeout: blockers, recommendations, customer sentiment, follow-up owner, follow-up due date, AI-ready summary, and trend tags.
-- Catalog: locally saved visit records and JSON export for downstream analysis.
+The app asks a few mandatory setup questions, then lets the onsite team member explain the visit naturally. It organizes that narrative into a structured table that can later be summarized, exported, searched, and analyzed for trends.
+
+## Flow
+
+1. Press **Start visit**.
+2. Answer the required setup questions:
+   - Customer name
+   - Customer ID
+   - Onsite location
+   - Reason ShipHero is onsite
+3. Give the onsite overview in plain language.
+4. The app organizes the overview into:
+   - Account
+   - Overview
+   - Workflows
+   - Issues and risks
+   - Training gaps
+   - Recommendations
+   - Follow-up
+   - Trend tags
+5. If the visit record is not good enough, the app prompts for missing information.
+6. Generate a summary, save the visit locally, or export JSON.
+
+## AI Behavior
+
+The app is ready for OpenAI keys, but it also works without them.
+
+Without API keys:
+
+- Required-question flow works
+- Browser dictation works where supported
+- Local parsing organizes notes using workflow and issue keywords
+- Local summaries work
+- Local save and JSON export work
+
+With API keys:
+
+- `/api/organize` can use an OpenAI model to classify the narrative into the proper structured table
+- `/api/summary` can use an OpenAI model to write the final closeout summary
+- `/api/transcribe` is available for future recorded-audio transcription
 
 ## Local Setup
 
@@ -26,25 +60,27 @@ Create `.env.local` from `.env.example` and set:
 
 ```bash
 OPENAI_API_KEY=...
+OPENAI_ORGANIZE_MODEL=...
 OPENAI_SUMMARY_MODEL=...
 OPENAI_TRANSCRIPTION_MODEL=...
 ```
 
-Without those values, the app still works with browser dictation, local summary drafting, local catalog saves, and JSON export.
+`OPENAI_ORGANIZE_MODEL` can use the same model as `OPENAI_SUMMARY_MODEL`.
 
-## GitHub and Vercel
+## Vercel
 
-1. Push this project to a private GitHub repo.
-2. Import the repo in Vercel as a Next.js project.
-3. Add the OpenAI environment variables in Vercel Project Settings.
-4. Let Vercel create preview deployments for pull requests and production deployments from `main`.
+1. Import the GitHub repo in Vercel.
+2. Keep the framework as Next.js.
+3. Add the OpenAI environment variables later when ready.
+4. Deploy.
 
-The included GitHub Action runs install, lint, and build on pushes and pull requests.
+The app deploys without API keys; AI calls fall back to local behavior until keys are configured.
 
 ## Recommended Next Iterations
 
-- Add authentication for ShipHero users.
+- Add ShipHero login.
 - Store visits in a shared database instead of browser storage.
-- Add customer/account lookup from CRM or internal account systems.
-- Add dashboards for trend analysis by workflow, root cause, ARR risk, and customer segment.
-- Package the same flow as a private iOS app once the workflow stabilizes.
+- Add account lookup from CRM or internal systems.
+- Add recorded-audio upload in the conversational UI.
+- Build a trends dashboard by workflow, root cause, ARR risk, and customer segment.
+- Package the stabilized flow as a private iOS app.

@@ -2,93 +2,81 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-type WorkflowEntry = {
-  name?: string;
+type WorkflowFinding = {
+  workflow?: string;
   status?: string;
+  evidence?: string;
   severity?: string;
   rootCause?: string;
-  notes?: string;
   nextStep?: string;
 };
 
-type SummaryInput = {
-  accountName?: string;
-  accountId?: string;
-  arr?: string;
-  location?: string;
-  visitDate?: string;
-  visitObjective?: string;
-  facilityProfile?: string;
-  ordersPerDay?: string;
-  skuCount?: string;
-  shifts?: string;
-  integrations?: string;
-  painPoints?: string;
-  trainingGaps?: string;
-  blockers?: string;
-  recommendations?: string;
-  customerSentiment?: string;
-  followUpOwner?: string;
-  followUpDate?: string;
-  generalNotes?: string;
-  transcript?: string;
+type OrganizedVisit = {
+  account?: {
+    customerName?: string;
+    customerId?: string;
+    location?: string;
+    visitObjective?: string;
+    visitDate?: string;
+  };
+  overview?: string;
+  workflows?: WorkflowFinding[];
+  issues?: string[];
+  trainingGaps?: string[];
+  recommendations?: string[];
+  followUps?: string[];
   trendTags?: string[];
-  workflows?: WorkflowEntry[];
+  sentiment?: string;
+  missingInfo?: string[];
+};
+
+type SummaryInput = {
+  customerName?: string;
+  customerId?: string;
+  location?: string;
+  visitObjective?: string;
+  overview?: string;
+  additionalContext?: string;
+  organized?: OrganizedVisit | null;
 };
 
 function compact(value?: string) {
   return value?.trim() || "Not captured";
 }
 
+function list(values?: string[]) {
+  return values && values.length > 0 ? values.join("; ") : "Not captured";
+}
+
 function localSummary(input: SummaryInput) {
-  const workflows = input.workflows || [];
-  const reviewed = workflows.filter(
-    (workflow) => workflow.status && workflow.status !== "Not reviewed",
-  );
-  const risks = workflows.filter(
-    (workflow) =>
-      workflow.status === "Issue found" || workflow.status === "Follow-up",
-  );
-  const tags = [
-    ...(input.trendTags || []),
-    ...workflows
-      .map((workflow) => workflow.rootCause)
-      .filter((rootCause): rootCause is string => Boolean(rootCause)),
-  ];
+  const organized = input.organized;
+  const account = organized?.account;
+  const workflows =
+    organized?.workflows && organized.workflows.length > 0
+      ? organized.workflows
+          .map(
+            (workflow) =>
+              `${compact(workflow.workflow)} (${compact(workflow.status)}): ${compact(
+                workflow.evidence,
+              )}`,
+          )
+          .join("; ")
+      : "Not captured";
 
   return [
-    `Account: ${compact(input.accountName)} (${compact(input.accountId)})`,
-    `Location/date: ${compact(input.location)} on ${compact(input.visitDate)}.`,
-    `Commercial context: ARR ${compact(input.arr)}; sentiment ${compact(
-      input.customerSentiment,
-    )}.`,
-    `Visit objective: ${compact(input.visitObjective)}.`,
-    `Operation snapshot: ${compact(input.facilityProfile)}; ${compact(
-      input.ordersPerDay,
-    )} orders/day; ${compact(input.skuCount)} SKUs; ${compact(input.shifts)} shifts.`,
-    `Workflows covered: ${
-      reviewed.length > 0
-        ? reviewed
-            .map((workflow) => `${workflow.name} (${workflow.status})`)
-            .join(", ")
-        : "None marked"
-    }.`,
-    `Open risks: ${
-      risks.length > 0
-        ? risks
-            .map(
-              (workflow) =>
-                `${workflow.name} - ${workflow.severity || "No severity"}${
-                  workflow.nextStep ? `; next step: ${workflow.nextStep}` : ""
-                }`,
-            )
-            .join(" | ")
-        : "No issue workflows marked"
-    }.`,
-    `Themes: ${tags.length > 0 ? [...new Set(tags)].join(", ") : "None tagged"}.`,
-    `Blockers: ${compact(input.blockers)}.`,
-    `Recommendations: ${compact(input.recommendations)}.`,
-    `Follow-up: ${compact(input.followUpOwner)} by ${compact(input.followUpDate)}.`,
+    `Customer: ${compact(account?.customerName || input.customerName)} (${compact(
+      account?.customerId || input.customerId,
+    )})`,
+    `Location: ${compact(account?.location || input.location)}`,
+    `Objective: ${compact(account?.visitObjective || input.visitObjective)}`,
+    `Situation: ${compact(organized?.overview || input.overview)}`,
+    `Workflows covered: ${workflows}`,
+    `Issues and risks: ${list(organized?.issues)}`,
+    `Training gaps: ${list(organized?.trainingGaps)}`,
+    `Recommendations: ${list(organized?.recommendations)}`,
+    `Follow-up: ${list(organized?.followUps)}`,
+    `Trend tags: ${list(organized?.trendTags)}`,
+    `Missing info: ${list(organized?.missingInfo)}`,
   ].join("\n");
 }
 
@@ -156,7 +144,7 @@ export async function POST(request: Request) {
       model,
       store: false,
       instructions:
-        "You summarize ShipHero WMS customer onsite visits. Produce a concise operational closeout with sections: Situation, Workflows Covered, Issues and Root Causes, Customer Impact, Recommendations, Follow-up Owners, Trend Tags. Use only the provided visit data.",
+        "You summarize ShipHero WMS onsite visits from an organized structured table. Produce a concise closeout with sections: Situation, Workflows Covered, Issues and Root Causes, Training/SOP Gaps, Recommendations, Follow-up, Trend Tags, Missing Info. Use only provided data.",
       input: JSON.stringify(input),
       max_output_tokens: 900,
     }),
@@ -166,7 +154,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       source: "local",
       summary: fallback,
-      error: "OpenAI summary request failed, so a local draft was returned.",
+      error: "OpenAI summary request failed, so a local summary was returned.",
     });
   }
 

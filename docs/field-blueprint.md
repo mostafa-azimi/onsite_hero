@@ -1,37 +1,38 @@
-# ShipHero Onsite Compass Field Blueprint
+# ShipHero Onsite Compass Conversation Blueprint
 
-## Required First-Pass Fields
+## Product Intent
 
-- Account name
-- Account ID
-- Onsite location
-- Visit objective
-- Workflows observed
-- Blockers or risks
+The user should not fill out a long operational form onsite. The app should ask only the minimum required setup questions, then let the user describe the visit naturally. AI or local parsing turns that narrative into structured data.
 
-## Recommended Account Context
+## Mandatory Questions
 
-- ARR
-- Visit date
-- Onsite lead
-- Customer stakeholders
-- Customer sentiment
-- Follow-up owner
-- Follow-up due date
+1. What is the customer name?
+2. What is their customer ID?
+3. Where is this onsite happening?
+4. What is the main reason ShipHero is onsite?
 
-## Operation Snapshot
+## Freeform Prompt
 
-- Facility profile
-- Orders per day
-- SKU count
-- Shifts
-- Integrations in scope
-- Current pain points
-- Training gaps or SOP drift
+After the mandatory questions, ask for a natural-language overview:
 
-## Workflow Walkthrough
+> Tell me what happened onsite. Mention what workflows you observed, what training happened, what was broken or confusing, what customer impact you saw, and what follow-up is needed.
 
-Capture status, severity, root cause, notes, and next step for:
+## Organized Table
+
+The app should organize the conversation into:
+
+- Account
+- Overview
+- Workflows
+- Issues and risks
+- Training gaps
+- Recommendations
+- Follow-up
+- Trend tags
+
+## Workflow Targets
+
+The parser should identify mentions of:
 
 - Receiving
 - Putaway
@@ -43,33 +44,34 @@ Capture status, severity, root cause, notes, and next step for:
 - Returns
 - Integrations
 
-## Root Cause Taxonomy
+## Minimum Record Quality
 
-- Training
-- SOP gap
-- Configuration
-- Integration
-- Hardware or network
-- Inventory accuracy
-- Labor planning
-- Product feedback
+If any of these are missing, the app should ask follow-up questions:
 
-## Trend Tags
+- Customer name
+- Customer ID
+- Onsite location
+- Visit objective
+- Full onsite overview
+- At least one workflow reviewed, trained, or troubleshot
+- Whether there were blockers or risks
+- Follow-up, recommendation, or explicit note that none is needed
 
-- Go-live readiness
-- Training needed
-- Workflow redesign
-- Support follow-up
-- Product feedback
-- Integration risk
-- ARR risk
-- Expansion opportunity
+## Structured Output
 
-## Closeout Outputs
+Each visit should be exportable as JSON with:
 
-- AI-ready summary
-- Blockers and risks
-- Recommendations
-- Follow-up owner and date
-- Exportable structured JSON
-- Saved local report for trend review
+- Required account fields
+- Raw overview and additional context
+- Organized table
+- Missing-info prompts
+- Summary
+- Trend tags
+
+## Later Enhancements
+
+- Shared database
+- ShipHero login
+- CRM/account lookup
+- Audio upload and transcription in the same conversation
+- Trend dashboard by workflow, root cause, customer segment, and ARR risk
