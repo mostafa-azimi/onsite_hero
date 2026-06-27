@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
+const DEFAULT_TEXT_MODEL = "gpt-5.5";
+
 type WorkflowFinding = {
   workflow?: string;
   status?: string;
@@ -125,9 +127,13 @@ export async function POST(request: Request) {
   const input = (await request.json()) as SummaryInput;
   const fallback = localSummary(input);
   const apiKey = process.env.OPENAI_API_KEY;
-  const model = process.env.OPENAI_SUMMARY_MODEL;
+  const model =
+    process.env.OPENAI_SUMMARY_MODEL ||
+    process.env.OPENAI_TEXT_MODEL ||
+    process.env.OPENAI_ORGANIZE_MODEL ||
+    DEFAULT_TEXT_MODEL;
 
-  if (!apiKey || !model) {
+  if (!apiKey) {
     return NextResponse.json({
       source: "local",
       summary: fallback,

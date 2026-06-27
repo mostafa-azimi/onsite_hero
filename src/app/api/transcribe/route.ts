@@ -2,15 +2,16 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
+const DEFAULT_TRANSCRIPTION_MODEL = "gpt-4o-transcribe";
+
 export async function POST(request: Request) {
   const apiKey = process.env.OPENAI_API_KEY;
-  const model = process.env.OPENAI_TRANSCRIPTION_MODEL;
+  const model = process.env.OPENAI_TRANSCRIPTION_MODEL || DEFAULT_TRANSCRIPTION_MODEL;
 
-  if (!apiKey || !model) {
+  if (!apiKey) {
     return NextResponse.json(
       {
-        error:
-          "Set OPENAI_API_KEY and OPENAI_TRANSCRIPTION_MODEL to enable AI transcription.",
+        error: "Set OPENAI_API_KEY to enable AI transcription.",
       },
       { status: 400 },
     );

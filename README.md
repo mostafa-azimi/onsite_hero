@@ -41,9 +41,9 @@ Without API keys:
 
 With API keys:
 
-- `/api/organize` can use an OpenAI model to classify the narrative into the proper structured table
-- `/api/summary` can use an OpenAI model to write the final closeout summary
-- `/api/transcribe` is available for future recorded-audio transcription
+- `/api/organize` uses `gpt-5.5` by default to classify the narrative into the proper structured table
+- `/api/summary` uses `gpt-5.5` by default to write the final closeout summary
+- `/api/transcribe` uses `gpt-4o-transcribe` by default for higher-quality audio transcription
 
 ## Local Setup
 
@@ -60,18 +60,23 @@ Create `.env.local` from `.env.example` and set:
 
 ```bash
 OPENAI_API_KEY=...
-OPENAI_ORGANIZE_MODEL=...
-OPENAI_SUMMARY_MODEL=...
-OPENAI_TRANSCRIPTION_MODEL=...
 ```
 
-`OPENAI_ORGANIZE_MODEL` can use the same model as `OPENAI_SUMMARY_MODEL`.
+That is the only required variable. The app has best-quality model defaults in
+code. Optional overrides are available if you later want to tune cost or latency:
+
+```bash
+OPENAI_TEXT_MODEL=gpt-5.5
+OPENAI_ORGANIZE_MODEL=gpt-5.5
+OPENAI_SUMMARY_MODEL=gpt-5.5
+OPENAI_TRANSCRIPTION_MODEL=gpt-4o-transcribe
+```
 
 ## Vercel
 
 1. Import the GitHub repo in Vercel.
 2. Keep the framework as Next.js.
-3. Add the OpenAI environment variables later when ready.
+3. Add `OPENAI_API_KEY` when ready.
 4. Deploy.
 
 The app deploys without API keys; AI calls fall back to local behavior until keys are configured.
